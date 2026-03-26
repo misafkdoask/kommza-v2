@@ -259,29 +259,33 @@ img { display: block; max-width: 100%; }
 }
 .hscreen--light { background: var(--bg-light); }
 
-/* Features — compact dark cards on light bg */
-.feat-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 14px;
+/* Features — dark vertical cards */
+.feat-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
 }
 .feat-card {
-  background: var(--bg-dark);
-  border-radius: 20px;
-  padding: 24px 22px 28px;
+  flex-shrink: 0;
+  width: 280px;
+  height: 340px;
+  background: #090C0F;
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid rgba(255,255,255,0.06);
   transition: transform 0.3s var(--ease);
 }
 .feat-card:hover { transform: translateY(-4px); }
-.feat-card__emoji {
-  font-size: 32px; line-height: 1; margin-bottom: 16px;
-}
-.feat-card__title {
-  font-size: 17px; font-weight: 800; font-style: italic;
-  color: var(--text-light); margin-bottom: 8px;
-}
-.feat-card__text {
-  font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.5;
-}
+.feat-card:nth-child(1) { border-color: var(--yellow); }
+.feat-card:nth-child(2) { border-color: #4ECDC4; }
+.feat-card:nth-child(3) { border-color: #FF6B6B; }
+.feat-card:nth-child(4) { border-color: #A78BFA; }
+.feat-card:nth-child(5) { border-color: #34D399; }
+.feat-card__emoji { font-size: 48px; margin-bottom: auto; }
+.feat-card__title { font-size: 22px; font-weight: 700; color: var(--text-light); margin-bottom: 10px; }
+.feat-card__text { font-size: 15px; color: rgba(255,255,255,0.55); line-height: 1.5; }
 
 /* Steps overlay (z:3) */
 .steps-overlay {
@@ -715,31 +719,31 @@ img { display: block; max-width: 100%; }
         <p class="sub">УБРАЛИ ЛИШНЕЕ. ОСТАВИЛИ ГЛАВНОЕ</p>
       </div>
       <div class="hscreen__content">
-        <div class="feat-grid">
+        <div class="feat-row">
           <div class="feat-card">
             <div class="feat-card__emoji">🌐</div>
             <div class="feat-card__title">Без VPN</div>
-            <div class="feat-card__text">Работает везде в России без обходных путей.</div>
+            <div class="feat-card__text">Работает везде в России без обходных путей</div>
           </div>
           <div class="feat-card">
             <div class="feat-card__emoji">🖥</div>
             <div class="feat-card__title">Без установки</div>
-            <div class="feat-card__text">Один клик — и вы на встрече. Только браузер.</div>
+            <div class="feat-card__text">Один клик — и вы на встрече. Только браузер</div>
           </div>
           <div class="feat-card">
             <div class="feat-card__emoji">⚡</div>
             <div class="feat-card__title">Без регистрации</div>
-            <div class="feat-card__text">Участники подключаются сразу, без аккаунта.</div>
+            <div class="feat-card__text">Участники подключаются сразу, без аккаунта</div>
           </div>
           <div class="feat-card">
             <div class="feat-card__emoji">📅</div>
             <div class="feat-card__title">Календари</div>
-            <div class="feat-card__text">Яндекс и Google Календарь из коробки.</div>
+            <div class="feat-card__text">Яндекс и Google Календарь из коробки</div>
           </div>
           <div class="feat-card">
             <div class="feat-card__emoji">🔓</div>
             <div class="feat-card__title">Независимость</div>
-            <div class="feat-card__text">Без экосистемных привязок и зависимостей.</div>
+            <div class="feat-card__text">Без экосистемных привязок и зависимостей</div>
           </div>
         </div>
       </div>
