@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kommza — Видеовстречи</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,400;0,500;0,700;1,900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+/* ==========================================================================
+   DESIGN SYSTEM
+   ========================================================================== */
+:root {
+  --bg-dark: #1a1d21;
+  --bg-mid: #3a3d42;
+  --bg-gray: #808285;
+  --bg-light: #C5C9CE;
+  --bg-surface: #2a2d31;
+  --yellow: #FFFC1F;
+  --text-dark: #1a1a1a;
+  --text-light: #ffffff;
+  --fs-hero: clamp(52px, 7vw, 96px);
+  --fs-section: clamp(48px, 5.5vw, 72px);
+  --fs-sub: 12px;
+  --gutter: clamp(24px, 4vw, 60px);
+  --radius-lg: 28px;
+  --radius-card: 24px;
+  --radius-pill: 60px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow-card: 0 25px 70px rgba(0,0,0,0.35);
+  --shadow-device: 0 24px 80px rgba(0,0,0,0.5);
+}
+
+/* ==========================================================================
+   RESET
+   ========================================================================== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg-dark);
+  color: var(--text-light);
+  font-family: 'Rubik', -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+a { text-decoration: none; color: inherit; }
+img { display: block; max-width: 100%; }
+
+/* ==========================================================================
+   LOGO (fixed)
+   ========================================================================== */
+.logo {
+  position: fixed;
+  top: 28px;
+  left: var(--gutter);
+  z-index: 100;
+  transition: filter 0.4s ease;
+}
+.logo img { height: 24px; display: block; }
+.logo--dark { filter: brightness(0); }
+
+/* ==========================================================================
+   STICKY CTA BAR
+   ========================================================================== */
+.sticky-bar {
+  position: fixed;
+  bottom: 32px;
+  left: var(--gutter);
+  z-index: 90;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  padding: 16px;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: transform 0.5s var(--ease), opacity 0.5s ease;
+  pointer-events: none;
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  background: linear-gradient(rgba(9,12,15,0.07), rgba(9,12,15,0.07)), rgba(157,159,169,0.23);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.sticky-bar.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.sticky-bar--dark .sticky-bar__login {
+  color: rgba(255,255,255,0.7);
+  border-color: #C6CBD1;
+}
+.sticky-bar--dark .sticky-bar__start {
+  background: #F6F8FB;
+  color: var(--text-dark);
+}
+.sticky-bar--light .sticky-bar__login {
+  color: rgba(0,0,0,0.6);
+  border-color: rgba(0,0,0,0.2);
+}
+.sticky-bar--light .sticky-bar__start {
+  background: var(--text-dark);
+  color: var(--text-light);
+}
+.sticky-bar__login {
+  width: 72px; height: 72px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 400; font-family: 'Rubik', sans-serif;
+  border-radius: 28px; border: 2.8px solid;
+  transition: color 0.4s, border-color 0.4s, background 0.4s;
+}
+.sticky-bar__start {
+  width: 200px; height: 72px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 400; font-family: 'Rubik', sans-serif;
+  border-radius: 82px; margin-left: 8px;
+  transition: color 0.4s, background 0.4s;
+}
+
+/* ==========================================================================
+   HERO
+   ========================================================================== */
+.hero {
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+.hero__videos { position: absolute; inset: 0; }
+.hero__video {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover;
+  opacity: 0; transition: opacity 2s ease;
+}
+.hero__video--active { opacity: 1; }
+.hero__overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+}
+.hero__content {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100%; text-align: center; padding: 0 var(--gutter);
+}
+.hero__content h1 {
+  font-size: var(--fs-hero);
+  font-weight: 900; font-style: italic; line-height: 0.92;
+  color: var(--text-light);
+}
+.hero__sub {
+  font-size: var(--fs-sub); letter-spacing: 0.15em;
+  color: rgba(255,255,255,0.35); margin-top: 20px;
+}
+.hero__cta {
+  margin-top: 44px; display: inline-flex; align-items: center;
+  background: linear-gradient(rgba(9,12,15,0.07), rgba(9,12,15,0.07)), rgba(157,159,169,0.23);
+  border-radius: var(--radius-pill); padding: 12px 8px;
+  backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+}
+.hero__btn-login {
+  width: 64px; height: 64px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 400; font-family: 'Rubik', sans-serif;
+  color: rgba(255,255,255,0.7); border-radius: 24px; border: 2.5px solid #C6CBD1;
+}
+.hero__btn-start {
+  height: 64px; padding: 0 36px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 400; font-family: 'Rubik', sans-serif;
+  color: var(--text-dark); background: var(--yellow);
+  border-radius: 60px; margin-left: 8px;
+}
+.hero__enterprise {
+  position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+  font-size: 14px; color: rgba(255,255,255,0.45); z-index: 2; white-space: nowrap;
+}
+
+/* ==========================================================================
+   MAIN SCROLL — ONE pinned mega-section
+   Contains: Accordion → Features → Steps → Work
+   ========================================================================== */
+.main-scroll {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+}
+.main-scroll__video {
+  position: absolute; inset: 0; z-index: 0;
+}
+.main-scroll__video video {
+  width: 100%; height: 100%; object-fit: cover;
+  filter: blur(8px); -webkit-filter: blur(8px); transform: scale(1.1);
+}
+.main-scroll__bg {
+  position: absolute; inset: 0; z-index: 1;
+  background: rgba(106,110,115,0.65);
+  will-change: background-color;
+}
+
+/* Accordion layer (z:2) */
+.accordion-wrapper {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  perspective: 1200px; transform-style: preserve-3d;
+  z-index: 2;
+}
+.acc-text {
+  position: absolute; left: var(--gutter); top: 10vh;
+  z-index: 10; max-width: 500px;
+}
+.acc-text h2 {
+  font-size: var(--fs-section);
+  font-weight: 900; font-style: italic; line-height: 0.88;
+  color: var(--text-dark);
+}
+.acc-text p {
+  font-size: clamp(18px, 2.2vw, 32px);
+  font-weight: 300; color: #E1E4E9; margin-top: 24px; line-height: 1.25; max-width: 720px;
+}
+
+/* Cards */
+.card {
+  position: absolute;
+  width: clamp(320px, 55vw, 840px);
+  height: clamp(280px, 60vh, 720px);
+  border-radius: 32px; overflow: hidden;
+  transform-origin: center center;
+  box-shadow: var(--shadow-card);
+  will-change: transform;
+}
+.card img { width: 100%; height: 100%; object-fit: cover; }
+.card-1 { background: var(--bg-dark); z-index: 3; }
+.card-2 { background: #b0b4b8; z-index: 2; }
+.card-3 { background: var(--bg-mid); z-index: 1; }
+
+/* Horizontal strip (z:1) */
+.hstrip {
+  position: absolute; top: 0; left: 100vw;
+  display: flex; height: 100vh; width: max-content;
+  will-change: transform; z-index: 1;
+}
+.hscreen {
+  width: 100vw; height: 100vh; flex-shrink: 0; position: relative;
+}
+.hscreen__text {
+  position: absolute; left: var(--gutter); top: 10vh; max-width: 800px;
+}
+.hscreen__text h2 {
+  font-size: var(--fs-section);
+  font-weight: 900; font-style: italic; line-height: 0.88;
+  color: var(--text-dark);
+}
+.hscreen__text .sub {
+  font-size: var(--fs-sub); letter-spacing: 0.15em;
+  color: rgba(0,0,0,0.4); margin-top: 16px;
+}
+.hscreen__content {
+  position: absolute; left: var(--gutter); top: 34vh; right: var(--gutter);
+}
+.hscreen--light { background: var(--bg-light); }
+
+/* Features grid */
+.feat-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;
+}
+.feat-card {
+  background: linear-gradient(165deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px; min-height: 280px;
+  display: flex; flex-direction: column;
+  transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
+}
+.feat-card:hover { transform: translateY(-6px); box-shadow: 0 16px 48px rgba(0,0,0,0.12); }
+.feat-card__icon {
+  width: 80px; height: 80px; border-radius: 20px;
+  overflow: hidden; margin-bottom: 20px; flex-shrink: 0;
+}
+.feat-card__icon img { width: 100%; height: 100%; object-fit: cover; }
+.feat-card__title { font-size: 18px; font-weight: 800; font-style: italic; color: var(--text-dark); margin-bottom: 10px; }
+.feat-card__text { font-size: 15px; color: rgba(0,0,0,0.6); line-height: 1.5; margin-top: auto; }
+
+/* Steps overlay (z:3) */
+.steps-overlay {
+  position: absolute; inset: 0; z-index: 3;
+  opacity: 0; pointer-events: none; overflow: hidden;
+}
+.steps-header {
+  position: absolute; top: 10vh; left: 0; right: 0; text-align: center; z-index: 2;
+}
+.steps-header h2 {
+  font-size: var(--fs-section);
+  font-weight: 900; font-style: italic; line-height: 0.92;
+  color: var(--text-dark);
+}
+.steps-header .sub {
+  font-size: var(--fs-sub); letter-spacing: 0.15em;
+  color: rgba(0,0,0,0.4); margin-top: 16px;
+}
+.steps-area {
+  position: absolute; bottom: 20vh; left: 0; width: 100%; height: 200px;
+}
+.step {
+  position: absolute; top: 0;
+  display: flex; flex-direction: column; align-items: center;
+}
+.step-circle {
+  width: 140px; height: 140px;
+  border: 2.5px solid var(--text-dark); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48px; font-weight: 400; color: var(--text-dark);
+}
+.step-label {
+  margin-top: 20px;
+  font-size: var(--fs-sub); letter-spacing: 0.15em;
+  color: var(--text-dark); white-space: nowrap;
+}
+.step-line-dyn {
+  position: absolute; top: 70px; height: 2px; background: var(--text-dark);
+}
+
+/* ==========================================================================
+   WORK OVERLAY — inside main-scroll, above everything (z:4)
+   ========================================================================== */
+.work-overlay {
+  position: absolute; inset: 0; z-index: 4;
+  opacity: 0;
+  background-color: var(--bg-light);
+  will-change: opacity, background-color;
+  overflow: hidden;
+}
+.work-title {
+  position: absolute; z-index: 2; top: 10vh; opacity: 0;
+}
+.work-title h2 {
+  font-size: var(--fs-section);
+  font-weight: 900; font-style: italic; line-height: 0.92;
+}
+.work-title .sub {
+  font-size: var(--fs-sub); letter-spacing: 0.15em; margin-top: 16px;
+}
+.work-title--right {
+  right: var(--gutter); text-align: right;
+}
+.work-title--right h2 { color: var(--text-dark); }
+.work-title--right .sub { color: rgba(0,0,0,0.4); }
+
+.work-title--center {
+  left: 50%; transform: translateX(-50%); text-align: center;
+}
+.work-title--center h2 { color: rgba(255,255,255,0.35); }
+.work-title--center .sub { color: rgba(255,255,255,0.25); }
+
+.work-title--left {
+  left: var(--gutter); text-align: left;
+}
+.work-title--left h2 { color: var(--text-light); }
+.work-title--left .sub { color: rgba(255,255,255,0.4); }
+
+.work-cards-area {
+  position: absolute; top: 34vh; left: 0;
+  width: 100%; height: 45vh; overflow: hidden; z-index: 1;
+}
+.work-cards-strip {
+  display: flex; gap: 20px;
+  position: absolute; top: 0; left: var(--gutter); height: 100%;
+  will-change: transform;
+}
+.work-card {
+  flex-shrink: 0;
+  width: clamp(320px, 28vw, 420px);
+  height: calc(45vh - 40px);
+  border-radius: var(--radius-lg); overflow: hidden;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 0; background: #090C0F;
+  border: 2px solid transparent;
+  transition: transform 0.3s var(--ease);
+  position: relative;
+}
+.work-card:hover { transform: translateY(-4px); }
+.work-card:nth-child(1) { border-color: var(--yellow); }
+.work-card:nth-child(2) { border-color: #4ECDC4; }
+.work-card:nth-child(3) { border-color: #FF6B6B; }
+.work-card:nth-child(4) { border-color: #A78BFA; }
+.work-card:nth-child(5) { border-color: #F59E0B; }
+.work-card:nth-child(6) { border-color: #34D399; }
+.work-card__img {
+  position: absolute; top: 0; left: 0; right: 0; height: 55%; overflow: hidden;
+}
+.work-card__img img {
+  width: 100%; height: 100%; object-fit: cover;
+  opacity: 0.7; transition: opacity 0.3s ease;
+}
+.work-card:hover .work-card__img img { opacity: 0.9; }
+.work-card__body {
+  position: relative; z-index: 1; padding: 24px 32px 32px; margin-top: auto;
+  background: linear-gradient(to top, #090C0F 60%, transparent);
+}
+.work-card__title { font-size: 20px; font-weight: 700; color: var(--text-light); margin-bottom: 8px; }
+.work-card__text { font-size: 15px; color: rgba(255,255,255,0.6); line-height: 1.4; }
+
+/* ==========================================================================
+   DEVICE SECTION — normal flow block, entrance animation via IO
+   ========================================================================== */
+.device-section {
+  background: var(--bg-dark);
+  padding: 10vh var(--gutter) 8vh;
+}
+.device-section h2 {
+  font-size: var(--fs-section);
+  font-weight: 900; font-style: italic; line-height: 0.92;
+  color: var(--text-light);
+}
+.device-section .sub {
+  font-size: var(--fs-sub); letter-spacing: 0.15em;
+  color: rgba(255,255,255,0.4); margin-top: 16px;
+}
+.device-mockups {
+  margin-top: 40px;
+  display: flex; align-items: flex-end; gap: 50px;
+  perspective: 2000px;
+  max-width: 50%;
+  margin-left: auto;
+  margin-right: auto;
+}
+.device-laptop {
+  flex: 0 0 65%; border-radius: 16px; overflow: hidden;
+}
+.device-laptop img { width: 100%; display: block; }
+.device-phone {
+  flex: 0 0 20%; border-radius: 24px; overflow: hidden;
+}
+.device-phone img { width: 100%; display: block; }
+
+/* ==========================================================================
+   PRICING (adapted from v1.3)
+   ========================================================================== */
+.pricing-section {
+  background: var(--bg-dark);
+  padding: 10vh var(--gutter) 12vh;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.pricing-section h2 {
+  font-size: var(--fs-section);
+  font-weight: 900; font-style: italic; line-height: 0.92;
+  color: var(--text-light);
+}
+.pricing-section .sub {
+  font-size: var(--fs-sub); letter-spacing: 0.15em;
+  color: rgba(255,255,255,0.4); margin-top: 16px;
+}
+.pricing-grid {
+  margin-top: 48px;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  margin-bottom: 32px;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.price-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg); padding: clamp(32px, 3.5vw, 44px) clamp(24px, 2.5vw, 32px);
+  min-height: 560px;
+  display: flex; flex-direction: column; position: relative;
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: transform 0.3s var(--ease);
+}
+.price-card:hover { transform: translateY(-4px); }
+.price-card--rec {
+  border-color: var(--yellow);
+  transform: scale(1.02);
+  overflow: visible;
+}
+.price-card--rec:hover { transform: scale(1.02) translateY(-4px); }
+.price-badge {
+  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  background: var(--yellow); color: var(--bg-dark);
+  padding: 4px 20px; border-radius: var(--radius-pill);
+  font-size: 11px; font-weight: 700; letter-spacing: 1px; white-space: nowrap;
+}
+.price-card__header { margin-bottom: 28px; }
+.price-card__name {
+  font-size: 28px; font-weight: 800; font-style: italic;
+  color: var(--yellow); margin-bottom: 6px;
+}
+.price-card__who {
+  font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 8px;
+}
+.price-card__price { display: flex; align-items: baseline; gap: 4px; }
+.price-card__amount {
+  font-size: clamp(36px, 3.5vw, 52px); font-weight: 900;
+  color: var(--text-light); white-space: nowrap;
+}
+.price-card__period {
+  font-size: 14px; color: rgba(255,255,255,0.4); white-space: nowrap;
+}
+.price-card__features {
+  flex: 1; display: flex; flex-direction: column; gap: 16px;
+  margin-bottom: 40px; list-style: none;
+}
+.price-card__features li {
+  font-size: 15px; color: rgba(255,255,255,0.75);
+  padding-left: 24px; position: relative;
+}
+.price-card__features li::before {
+  content: ''; position: absolute; left: 0; top: 7px;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--yellow); opacity: 0.6;
+}
+.price-card--rec .price-card__features li::before { opacity: 1; }
+.price-card .btn {
+  display: block; width: 100%; padding: 16px 20px;
+  font-size: 12px; font-weight: 700; font-family: 'Rubik', sans-serif;
+  letter-spacing: 0.05em; text-align: center;
+  border-radius: var(--radius-pill); border: none; cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+  white-space: normal; line-height: 1.3;
+}
+.price-card .btn:hover { transform: translateY(-2px); opacity: 0.9; }
+.btn--white {
+  background: var(--text-light); color: var(--bg-dark);
+}
+.btn--outline {
+  background: transparent; color: var(--text-light);
+  border: 2px solid rgba(255,255,255,0.2) !important;
+}
+.pricing-footnote {
+  font-size: 13px; color: rgba(255,255,255,0.4); margin-top: 8px;
+}
+
+/* ==========================================================================
+   B2B MODAL
+   ========================================================================== */
+.modal {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.5s var(--ease);
+}
+.modal.is-open { opacity: 1; pointer-events: all; }
+.modal__backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.modal__content {
+  position: relative; background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  padding: clamp(32px, 4vw, 48px);
+  max-width: 500px; width: calc(100% - 40px);
+  transform: scale(0.95) translateY(20px);
+  transition: transform 0.5s var(--ease);
+}
+.modal.is-open .modal__content { transform: scale(1) translateY(0); }
+.modal__close {
+  position: absolute; top: 16px; right: 16px;
+  width: 40px; height: 40px; background: none; border: none;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.4); cursor: pointer;
+  transition: color 0.2s;
+}
+.modal__close:hover { color: var(--text-light); }
+.modal__title {
+  font-size: 28px; font-weight: 800; font-style: italic;
+  color: var(--text-light); margin-bottom: 12px;
+}
+.modal__text {
+  font-size: 16px; color: rgba(255,255,255,0.65); margin-bottom: 32px; line-height: 1.5;
+}
+.modal__form { display: flex; flex-direction: column; gap: 16px; }
+.modal__input {
+  width: 100%; padding: 16px 20px;
+  background: var(--bg-dark); border: 2px solid transparent;
+  border-radius: 14px; color: var(--text-light);
+  font-size: 16px; font-family: inherit;
+  transition: border-color 0.2s; outline: none;
+}
+.modal__input::placeholder { color: rgba(255,255,255,0.3); }
+.modal__input:focus { border-color: var(--yellow); }
+.modal__textarea { resize: vertical; min-height: 80px; }
+.modal__error {
+  display: none; font-size: 13px; color: #FE204F; margin-top: -8px;
+}
+.modal__error.is-visible { display: block; }
+.modal__input.is-invalid { border-color: #FE204F; }
+.modal__success { text-align: center; padding: 32px 0; }
+.modal__success p { font-size: 20px; font-weight: 600; color: var(--yellow); }
+
+/* ==========================================================================
+   FINAL CTA
+   ========================================================================== */
+.final-cta {
+  background: var(--bg-dark);
+  padding: 10vh var(--gutter); text-align: center;
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.final-cta h2 {
+  font-size: var(--fs-section);
+  font-weight: 900; font-style: italic; line-height: 0.92;
+  color: var(--text-light);
+}
+.final-cta .sub {
+  font-size: var(--fs-sub); letter-spacing: 0.15em;
+  color: rgba(255,255,255,0.35); margin-top: 16px;
+}
+
+/* ==========================================================================
+   FOOTER
+   ========================================================================== */
+.footer {
+  background: var(--bg-dark); padding: 36px var(--gutter);
+  border-top: 1px solid rgba(255,255,255,0.06); text-align: center;
+}
+.footer-logo { font-size: 18px; font-weight: 700; color: rgba(255,255,255,0.3); letter-spacing: 1px; }
+.footer-links { margin-top: 12px; font-size: 13px; color: rgba(255,255,255,0.2); }
+.footer-links a { transition: color 0.2s; }
+.footer-links a:hover { color: rgba(255,255,255,0.6); }
+</style>
+</head>
+<body>
+
+<!-- LOGO -->
+<div class="logo" id="logo"><img src="assets/logo-white.svg" alt="kommza"></div>
+
+<!-- STICKY CTA BAR -->
+<div class="sticky-bar sticky-bar--dark" id="stickyBar">
+  <a href="#" class="sticky-bar__login">Войти</a>
+  <a href="#" class="sticky-bar__start">Начать встречу</a>
+</div>
+
+<!-- ================================================================== -->
+<!-- HERO                                                                -->
+<!-- ================================================================== -->
+<section class="hero" id="heroSection">
+  <div class="hero__videos">
+    <video class="hero__video hero__video--active" autoplay muted playsinline loop poster="assets/ui-call.png">
+      <source src="assets/hero-bg.mp4" type="video/mp4">
+    </video>
+    <video class="hero__video" muted playsinline loop poster="assets/ui-lobby.png">
+      <source src="assets/hero-bg-2.mp4" type="video/mp4">
+    </video>
+    <div class="hero__overlay"></div>
+  </div>
+  <div class="hero__content">
+    <h1>видеовстречи —<br>быстро. просто.<br>надежно</h1>
+    <p class="hero__sub">МИНИМУМ ШАГОВ. МАКСИМУМ РЕЗУЛЬТАТА</p>
+    <div class="hero__cta">
+      <a href="#" class="hero__btn-login">Войти</a>
+      <a href="#" class="hero__btn-start">Начать встречу</a>
+    </div>
+  </div>
+  <a href="#" class="hero__enterprise">Запросить условия корпоративного пространства</a>
+</section>
+
+<!-- ================================================================== -->
+<!-- MEGA PINNED SECTION: Accordion → Features → Steps → Work            -->
+<!-- One continuous experience, no vertical scroll until device section   -->
+<!-- ================================================================== -->
+<section class="main-scroll" id="mainSection">
+
+  <!-- BG: blurred video -->
+  <div class="main-scroll__video" id="mainVideo">
+    <video autoplay muted playsinline loop>
+      <source src="assets/hero-bg-2.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <!-- BG: color overlay (animated for accordion/features/steps phases) -->
+  <div class="main-scroll__bg" id="scrollBg"></div>
+
+  <!-- LAYER: Accordion — text left + cards right (z:2) -->
+  <div class="accordion-wrapper" id="accWrapper">
+    <div class="acc-text" id="accText">
+      <h2>созвоны<br>без лишнего</h2>
+      <p>Встречи начинаются мгновенно.<br>Ссылка — и встреча.</p>
+    </div>
+    <div class="card card-1" id="c1"><img src="assets/ui-lobby.png" alt="Лобби Kommza"></div>
+    <div class="card card-2" id="c2"><img src="assets/ui-call.png" alt="Видеозвонок Kommza"></div>
+    <div class="card card-3" id="c3"><img src="assets/ui-end.png" alt="Завершение встречи"></div>
+  </div>
+
+  <!-- LAYER: Horizontal strip — Features → Steps bg (z:1) -->
+  <div class="hstrip" id="hstrip">
+    <div class="hscreen hscreen--light">
+      <div class="hscreen__text">
+        <h2>когда удобство<br>работает на результат</h2>
+        <p class="sub">УБРАЛИ ЛИШНЕЕ. ОСТАВИЛИ ГЛАВНОЕ</p>
+      </div>
+      <div class="hscreen__content">
+        <div class="feat-grid">
+          <div class="feat-card">
+            <div class="feat-card__icon"><img src="assets/icon-vpn.jpg" alt="Без VPN"></div>
+            <div class="feat-card__title">Без VPN</div>
+            <div class="feat-card__text">Работает везде в России без обходных путей.</div>
+          </div>
+          <div class="feat-card">
+            <div class="feat-card__icon"><img src="assets/icon-browser.jpg" alt="Без установки"></div>
+            <div class="feat-card__title">Без установки</div>
+            <div class="feat-card__text">Один клик — и вы на встрече. Только браузер.</div>
+          </div>
+          <div class="feat-card">
+            <div class="feat-card__icon"><img src="assets/icon-noreg.jpg" alt="Без регистрации"></div>
+            <div class="feat-card__title">Без регистрации</div>
+            <div class="feat-card__text">Участники подключаются сразу, без аккаунта.</div>
+          </div>
+          <div class="feat-card">
+            <div class="feat-card__icon"><img src="assets/icon-calendar.jpg" alt="Календари"></div>
+            <div class="feat-card__title">Календари</div>
+            <div class="feat-card__text">Яндекс и Google Календарь из коробки.</div>
+          </div>
+          <div class="feat-card">
+            <div class="feat-card__icon"><img src="assets/icon-unlink.jpg" alt="Независимость"></div>
+            <div class="feat-card__title">Независимость</div>
+            <div class="feat-card__text">Без экосистемных привязок и зависимостей.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="hscreen hscreen--light"></div>
+  </div>
+
+  <!-- LAYER: Steps overlay (z:3) -->
+  <div class="steps-overlay" id="stepsOverlay">
+    <div class="steps-header">
+      <h2>всегда бесшовно —<br>всегда на связи</h2>
+      <p class="sub">УБРАЛИ ЛИШНЕЕ. ОСТАВИЛИ ГЛАВНОЕ</p>
+    </div>
+    <div class="steps-area" id="stepsArea">
+      <div class="step" id="s1"><div class="step-circle">1</div><div class="step-label">СОЗДАЙ ВСТРЕЧУ</div></div>
+      <div class="step-line-dyn" id="line12"></div>
+      <div class="step" id="s2"><div class="step-circle">2</div><div class="step-label">ВЫШЛИ ССЫЛКУ</div></div>
+      <div class="step-line-dyn" id="line23"></div>
+      <div class="step" id="s3"><div class="step-circle">3</div><div class="step-label">НАЧНИ ОБЩАТЬСЯ</div></div>
+      <div class="step-line-dyn" id="lineLeft"></div>
+      <div class="step-line-dyn" id="lineRight"></div>
+    </div>
+  </div>
+
+  <!-- LAYER: Work overlay — titles + use-case cards (z:4) -->
+  <div class="work-overlay" id="workOverlay">
+    <div class="work-title work-title--right" id="titleRight">
+      <h2>для работы<br>в реальном темпе</h2>
+      <p class="sub">КОГДА ВАЖНЫ СКОРОСТЬ. ФОКУС И ПРОФЕССИОНАЛИЗМ</p>
+    </div>
+    <div class="work-title work-title--center" id="titleCenter">
+      <h2>для работы<br>в реальном темпе</h2>
+      <p class="sub">КОГДА ВАЖНЫ СКОРОСТЬ. ФОКУС И ПРОФЕССИОНАЛИЗМ</p>
+    </div>
+    <div class="work-title work-title--left" id="titleLeft">
+      <h2>для работы<br>в реальном темпе</h2>
+      <p class="sub">КОГДА ВАЖНЫ СКОРОСТЬ. ФОКУС И ПРОФЕССИОНАЛИЗМ</p>
+    </div>
+    <div class="work-cards-area">
+      <div class="work-cards-strip" id="workStrip">
+        <div class="work-card"><div class="work-card__img"><img src="assets/photo-uc-teams.jpg" alt=""></div><div class="work-card__body"><div class="work-card__title">Команды и IT</div><div class="work-card__text">Дейли за 2 минуты: ссылка, созвон, работаем дальше</div></div></div>
+        <div class="work-card"><div class="work-card__img"><img src="assets/photo-uc-corporate.jpg" alt=""></div><div class="work-card__body"><div class="work-card__title">Корпоративные встречи</div><div class="work-card__text">Без привязки к Teams или Google. Подключится любой контрагент</div></div></div>
+        <div class="work-card"><div class="work-card__img"><img src="assets/photo-uc-hr.jpg" alt=""></div><div class="work-card__body"><div class="work-card__title">HR и рекрутинг</div><div class="work-card__text">Кандидат переходит по ссылке — интервью начинается вовремя</div></div></div>
+        <div class="work-card"><div class="work-card__img"><img src="assets/photo-uc-consult.jpg" alt=""></div><div class="work-card__body"><div class="work-card__title">Консультации</div><div class="work-card__text">Клиент кликает по ссылке и сразу на консультации. Без регистрации</div></div></div>
+        <div class="work-card"><div class="work-card__img"><img src="assets/photo-uc-corporate.jpg" alt=""></div><div class="work-card__body"><div class="work-card__title">Продажи и демо</div><div class="work-card__text">Демо с записью и показом экрана — клиент видит всё</div></div></div>
+        <div class="work-card"><div class="work-card__img"><img src="assets/photo-uc-education.jpg" alt=""></div><div class="work-card__body"><div class="work-card__title">Обучение</div><div class="work-card__text">Вебинары до 200 человек с записью и интерактивом</div></div></div>
+      </div>
+    </div>
+  </div>
+
+
+</section>
+
+<!-- ================================================================== -->
+<!-- DEVICE SECTION — normal flow, entrance from right via IO            -->
+<!-- ================================================================== -->
+<section class="device-section" id="deviceSection">
+  <h2>на любом<br>устройстве</h2>
+  <p class="sub">КОГДА ВАЖНЫ СКОРОСТЬ. ФОКУС И ПРОФЕССИОНАЛИЗМ</p>
+  <div class="device-mockups">
+    <div class="device-laptop"><img src="assets/device-desktop-long.png" alt="Kommza на десктопе"></div>
+    <div class="device-phone"><img src="assets/device-phone-long.png" alt="Kommza на телефоне"></div>
+  </div>
+</section>
+
+<!-- ================================================================== -->
+<!-- PRICING (v1.3 style with cards, buttons, B2B modal)                 -->
+<!-- ================================================================== -->
+<section class="pricing-section">
+  <h2>с любым<br>форматом работы</h2>
+  <p class="sub">БЕСПЛАТНЫЙ СТАРТ. ОПТИМАЛЬНЫЙ РОСТ</p>
+  <div class="pricing-grid">
+    <!-- Старт -->
+    <article class="price-card">
+      <div class="price-card__header">
+        <h3 class="price-card__name">Старт</h3>
+        <p class="price-card__who">Для пробы</p>
+        <div class="price-card__price"><span class="price-card__amount">0&nbsp;₽</span></div>
+      </div>
+      <ul class="price-card__features">
+        <li>До 10 участников</li>
+        <li>Встречи до 1 часа</li>
+        <li>Размытие фона</li>
+        <li>1 пробный вебинар</li>
+      </ul>
+      <a href="https://hub.kommza.io/register" class="btn btn--outline">ЗАРЕГИСТРИРОВАТЬСЯ</a>
+    </article>
+    <!-- Pro (рекомендуем) -->
+    <article class="price-card price-card--rec">
+      <div class="price-badge">РЕКОМЕНДУЕМ</div>
+      <div class="price-card__header">
+        <h3 class="price-card__name">Pro</h3>
+        <p class="price-card__who">Для фрилансеров</p>
+        <div class="price-card__price">
+          <span class="price-card__amount">450&nbsp;₽</span>
+          <span class="price-card__period">/ мес</span>
+        </div>
+      </div>
+      <ul class="price-card__features">
+        <li>До 20 участников</li>
+        <li>Встречи до 2 часов</li>
+        <li>10 записей встреч</li>
+        <li>1 вебинар в месяц</li>
+        <li>Фоны + размытие</li>
+      </ul>
+      <a href="https://hub.kommza.io/register?plan=pro" class="btn btn--white">ВЫБРАТЬ PRO</a>
+    </article>
+    <!-- Team -->
+    <article class="price-card">
+      <div class="price-card__header">
+        <h3 class="price-card__name">Team</h3>
+        <p class="price-card__who">Для команд</p>
+        <div class="price-card__price">
+          <span class="price-card__amount">850&nbsp;₽</span>
+          <span class="price-card__period">/ мес</span>
+        </div>
+      </div>
+      <ul class="price-card__features">
+        <li>До 15 пользователей</li>
+        <li>До 100 участников</li>
+        <li>30 записей встреч</li>
+        <li>Вебинары без лимита</li>
+        <li>AI-ассистент</li>
+      </ul>
+      <a href="https://hub.kommza.io/register?plan=team" class="btn btn--outline">ВЫБРАТЬ TEAM</a>
+    </article>
+    <!-- Business -->
+    <article class="price-card">
+      <div class="price-card__header">
+        <h3 class="price-card__name">Business</h3>
+        <p class="price-card__who">Для компаний</p>
+        <div class="price-card__price">
+          <span class="price-card__amount">9&nbsp;600&nbsp;₽</span>
+          <span class="price-card__period">/ мес</span>
+        </div>
+      </div>
+      <ul class="price-card__features">
+        <li>От 8 пользователей</li>
+        <li>До 200 участников</li>
+        <li>100 записей встреч</li>
+        <li>Все функции</li>
+        <li>Приоритетная поддержка</li>
+      </ul>
+      <button class="btn btn--outline" id="openModal">ЗАПРОСИТЬ УСЛОВИЯ</button>
+    </article>
+  </div>
+  <p class="pricing-footnote">Оплата помесячно или со скидкой за период. Растите — подключайте людей по мере необходимости.</p>
+</section>
+
+<!-- ================================================================== -->
+<!-- FINAL CTA                                                           -->
+<!-- ================================================================== -->
+<section class="final-cta">
+  <h2>видеовстречи —<br>быстро. просто.<br>надежно</h2>
+  <p class="sub">МИНИМУМ ШАГОВ. МАКСИМУМ РЕЗУЛЬТАТА</p>
+</section>
+
+<!-- ================================================================== -->
+<!-- B2B MODAL                                                           -->
+<!-- ================================================================== -->
+<div class="modal" id="b2bModal" aria-hidden="true" role="dialog" aria-label="Запросить условия для бизнеса">
+  <div class="modal__backdrop" id="modalBackdrop"></div>
+  <div class="modal__content">
+    <button class="modal__close" id="modalClose" aria-label="Закрыть">
+      <svg width="24" height="24" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <h3 class="modal__title">Запросить условия для бизнеса</h3>
+    <p class="modal__text">Расскажите, сколько человек в команде и какие функции нужны. Подберём план со скидкой и подключим менеджера.</p>
+    <form class="modal__form" id="b2bForm" novalidate>
+      <input type="text" name="name" class="modal__input" placeholder="Имя" required>
+      <span class="modal__error" id="errorName">Введите имя</span>
+      <input type="email" name="email" class="modal__input" placeholder="Email" required>
+      <span class="modal__error" id="errorEmail">Введите корректный email</span>
+      <input type="text" name="company" class="modal__input" placeholder="Компания">
+      <textarea name="message" class="modal__input modal__textarea" placeholder="Сообщение" rows="3"></textarea>
+      <button type="submit" class="btn btn--white modal__submit" style="margin-top:8px">ОТПРАВИТЬ</button>
+    </form>
+    <div class="modal__success" id="modalSuccess" hidden>
+      <p>Спасибо! Наш менеджер свяжется с вами в течение 2 часов в рабочие дни.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- FOOTER                                                              -->
+<!-- ================================================================== -->
+<footer class="footer">
+  <div class="footer-logo">kommza</div>
+  <div class="footer-links">
+    <a href="#">Условия использования</a> | <a href="#">Конфиденциальность</a> | <a href="#">Куки</a>
+  </div>
+</footer>
+
+<!-- ================================================================== -->
+<!-- SCRIPTS                                                             -->
+<!-- ================================================================== -->
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+/* ==============================================================
+   HELPERS
+   ============================================================== */
+function lerp3(a, b, t) {
+  t = Math.max(0, Math.min(1, t));
+  return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t];
+}
+
+/* ==============================================================
+   A: HERO VIDEO ROTATION
+   ============================================================== */
+{
+  const vids = document.querySelectorAll('.hero__video');
+  if (vids.length >= 2) {
+    let cur = 0;
+    vids[0].addEventListener('ended', () => {
+      const next = (cur + 1) % vids.length;
+      vids[cur].classList.remove('hero__video--active');
+      vids[next].classList.add('hero__video--active');
+      vids[next].play().catch(() => {});
+      cur = next;
+    });
+  }
+}
+
+/* ==============================================================
+   B: STICKY CTA + LOGO — setup
+   ============================================================== */
+const stickyBar = document.getElementById('stickyBar');
+const logoEl = document.getElementById('logo');
+let _isDarkBg = false, _isLogoDark = false;
+
+function setStickyTheme(dark) {
+  if (dark === _isDarkBg) return;
+  _isDarkBg = dark;
+  stickyBar.classList.toggle('sticky-bar--dark', !dark);
+  stickyBar.classList.toggle('sticky-bar--light', dark);
+}
+function setLogoTheme(dark) {
+  if (dark === _isLogoDark) return;
+  _isLogoDark = dark;
+  logoEl.classList.toggle('logo--dark', dark);
+}
+
+// Show sticky bar after hero
+ScrollTrigger.create({
+  trigger: '#mainSection',
+  start: 'top 80%',
+  onEnter: () => stickyBar.classList.add('is-visible'),
+  onLeaveBack: () => stickyBar.classList.remove('is-visible'),
+});
+
+/* ==============================================================
+   C: MEGA TIMELINE — Accordion → Features → Steps → Work
+   One pinned section, one timeline
+   ============================================================== */
+{
+  const hstrip       = document.getElementById('hstrip');
+  const scrollBg     = document.getElementById('scrollBg');
+  const mainVid      = document.getElementById('mainVideo');
+  const workOverlay  = document.getElementById('workOverlay');
+  const workStrip    = document.getElementById('workStrip');
+  const onePanel     = window.innerWidth;
+
+  // Work cards scroll distance
+  const stripWidth  = workStrip.scrollWidth;
+  const moveAmount  = stripWidth - window.innerWidth + 80;
+
+  // Total virtual scroll distance
+  const totalScroll = 12000;
+
+  // Initial card state: stacked with perspective tilt
+  gsap.set('#c1', { rotateY: -20, x: 40 });
+  gsap.set('#c2', { rotateY: -20, x: 100 });
+  gsap.set('#c3', { rotateY: -20, x: 160 });
+
+  const mainEl = document.getElementById('mainSection');
+
+  const tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: '#mainSection',
+      start: 'top top',
+      end: '+=' + totalScroll,
+      scrub: 0.6,
+      pin: true,
+      anticipatePin: 1,
+      onUpdate: (self) => {
+        const p = self.progress;
+
+        /* ---- BACKGROUND COLORS ---- */
+
+        // Phase: Accordion + Features + Steps (0.00 — 0.60)
+        if (p < 0.28) {
+          // Video overlay → mid-gray → light
+          const t = p / 0.28;
+          const rgb = lerp3([106,110,115], [197,201,206], t);
+          const alpha = 0.65 + t * 0.35;
+          scrollBg.style.backgroundColor = 'rgba('+( rgb[0]|0)+','+(rgb[1]|0)+','+(rgb[2]|0)+','+alpha.toFixed(2)+')';
+        } else if (p < 0.60) {
+          scrollBg.style.backgroundColor = 'rgb(197,201,206)';
+        }
+
+        // Phase: Work (0.60 — 1.00)
+        if (p >= 0.60) {
+          const wp = (p - 0.60) / 0.40; // 0→1 within work
+          let rgb;
+          if      (wp < 0.30) rgb = [197,201,206]; // light
+          else if (wp < 0.45) rgb = lerp3([197,201,206],[58,61,66], (wp-0.30)/0.15);
+          else if (wp < 0.60) rgb = [58,61,66]; // mid
+          else if (wp < 0.75) rgb = lerp3([58,61,66],[26,29,33], (wp-0.60)/0.15);
+          else                rgb = [26,29,33]; // dark
+          workOverlay.style.backgroundColor = 'rgb('+(rgb[0]|0)+','+(rgb[1]|0)+','+(rgb[2]|0)+')';
+        }
+
+        // Video fade
+        mainVid.style.opacity = p < 0.12 ? 1 - p / 0.12 : 0;
+
+        /* ---- LOGO + STICKY THEME ---- */
+        // Light bg zone: ~0.28 to ~work going dark
+        const workDarkStart = 0.60 + 0.40 * 0.60; // = 0.84
+        const isLightBg = p > 0.28 && p < workDarkStart;
+        setLogoTheme(isLightBg);      // dark logo on light
+        setStickyTheme(!isLightBg);    // light sticky on dark bg
+
+      }
+    }
+  });
+
+  /* ===== PHASE 1: Accordion text fade (0.01 — 0.05) ===== */
+  tl.to('#accText', { opacity: 0, x: -200, duration: 0.04, ease: 'power2.in' }, 0.01);
+
+  /* ===== PHASE 2: Cards fan out (0.02 — 0.16) ===== */
+  tl.to('.accordion-wrapper', { perspective: 1200, duration: 0.14 }, 0.02);
+  tl.to('#c3', { rotateY: -20, x: 880, scale: 0.95, duration: 0.14, ease: 'power2.out' }, 0.03);
+  tl.to('#c1', { rotateY: -15, x: -830, scale: 1.05, duration: 0.14, ease: 'power2.out' }, 0.05);
+  tl.to('#c2', { rotateY: -20, x: -40, scale: 1.0, duration: 0.14, ease: 'power2.out' }, 0.07);
+
+  /* ===== PHASE 3: Pause — see spread (0.16 — 0.22) ===== */
+
+  /* ===== PHASE 4: Cards cascade left (0.20 — 0.28) ===== */
+  tl.to('#c1', { x: -2500, duration: 0.04, ease: 'power2.in' }, 0.20);
+  tl.to('#c2', { x: -2500, duration: 0.04, ease: 'power2.in' }, 0.22);
+  tl.to('#c3', { x: -2500, duration: 0.04, ease: 'power2.in' }, 0.24);
+
+  /* ===== PHASE 5: Horizontal strip slides in (0.28 — 0.31) ===== */
+  tl.to(hstrip, { left: 0, duration: 0.03, ease: 'power2.out' }, 0.28);
+
+  /* ===== PHASE 6: Horizontal scroll features → steps bg (0.32 — 0.38) ===== */
+  tl.to(hstrip, { x: -onePanel, ease: 'none', duration: 0.06 }, 0.32);
+
+  /* ===== PHASE 7: Steps overlay in (0.38 — 0.40) ===== */
+  tl.to('#stepsOverlay', { opacity: 1, duration: 0.02 }, 0.38);
+
+  /* ===== PHASE 8: Steps circles animate (0.42 — 0.56) ===== */
+  /* (see steps block below) */
+
+  /* ===== PHASE 9: Steps overlay out (0.56 — 0.58) ===== */
+  tl.to('#stepsOverlay', { opacity: 0, duration: 0.02 }, 0.57);
+
+  /* ===== PHASE 10: Work overlay in (0.59 — 0.61) ===== */
+  tl.to(workOverlay, { opacity: 1, duration: 0.02 }, 0.59);
+  tl.set('#titleRight', { opacity: 1 }, 0.59);
+
+  /* ===== PHASE 11: Work cards scroll RIGHT→LEFT (start offset, scroll back) ===== */
+  gsap.set(workStrip, { x: -moveAmount });
+  tl.to(workStrip, { x: 0, ease: 'none', duration: 0.40 }, 0.60);
+
+  /* ===== PHASE 12: Work title transitions ===== */
+  // Right → Center (when bg goes mid-dark)
+  tl.to('#titleRight',  { opacity: 0, duration: 0.03, ease: 'power1.inOut' }, 0.72);
+  tl.to('#titleCenter', { opacity: 1, duration: 0.03, ease: 'power1.inOut' }, 0.75);
+  // Center → Left (when bg goes dark)
+  tl.to('#titleCenter', { opacity: 0, duration: 0.03, ease: 'power1.inOut' }, 0.84);
+  tl.to('#titleLeft',   { opacity: 1, duration: 0.03, ease: 'power1.inOut' }, 0.87);
+
+  /* ===== STEPS CIRCLE ANIMATION ===== */
+  {
+    const vw = window.innerWidth;
+    const cw = 140;
+    // Billiard ball effect:
+    // Circle 1 is STATIC at anchor position
+    // Circle 2 approaches from right
+    // Circle 3 approaches from far right
+    // On "collision", the chain knocks them left one by one
+    const anchor = vw * 0.15; // Circle 1's home position
+
+    const states = [
+      { s1: anchor,       s2: vw*0.70, s3: vw*1.30 },  // 1 fixed, 2 right, 3 off-screen
+      { s1: anchor,       s2: vw*0.50, s3: vw*0.85 },  // 1 still fixed, 2+3 approach — all visible
+      { s1: vw*-0.25,     s2: anchor,  s3: vw*0.55 },  // HIT! 1 knocked left, 2 takes 1's spot
+      { s1: vw*-0.55,     s2: vw*-0.20,s3: anchor },    // Chain: 2 knocked left, 3 at anchor
+    ];
+
+    gsap.set('#s1', { left: states[0].s1 - cw/2 });
+    gsap.set('#s2', { left: states[0].s2 - cw/2 });
+    gsap.set('#s3', { left: states[0].s3 - cw/2 });
+
+    function updateLines(st) {
+      const l12L = st.s1+cw/2+30, l12R = st.s2-cw/2-30;
+      gsap.set('#line12', { left: l12L, width: Math.max(0, l12R-l12L) });
+      const l23L = st.s2+cw/2+30, l23R = st.s3-cw/2-30;
+      gsap.set('#line23', { left: l23L, width: Math.max(0, l23R-l23L) });
+      if (Math.min(st.s1,st.s2,st.s3) > 0) {
+        gsap.set('#lineLeft', { width: 0 });
+      } else {
+        let osl = vw;
+        [st.s1,st.s2,st.s3].forEach(x => { if (x > -cw && x < osl) osl = x; });
+        gsap.set('#lineLeft', { left: -200, width: Math.max(0, osl-cw/2-30+200) });
+      }
+      if (Math.max(st.s1,st.s2,st.s3) < vw) {
+        gsap.set('#lineRight', { width: 0 });
+      } else {
+        let osr = 0;
+        [st.s1,st.s2,st.s3].forEach(x => { if (x < vw+cw && x > osr) osr = x; });
+        gsap.set('#lineRight', { left: osr+cw/2+30, width: vw });
+      }
+    }
+    updateLines(states[0]);
+
+    const d = 0.05;
+
+    // State 0→1: Only 2 and 3 move toward 1. Circle 1 stays put.
+    tl.to('#s2', { left: states[1].s2-cw/2, duration: d, ease: 'power2.out' }, 0.42);
+    tl.to('#s3', { left: states[1].s3-cw/2, duration: d, ease: 'power2.out' }, 0.42);
+
+    // State 1→2: COLLISION — 1 gets knocked left, 2 snaps to 1's spot, 3 advances
+    tl.to('#s1', { left: states[2].s1-cw/2, duration: 0.04, ease: 'power3.out' }, 0.49);
+    tl.to('#s2', { left: states[2].s2-cw/2, duration: 0.04, ease: 'power3.out' }, 0.49);
+    tl.to('#s3', { left: states[2].s3-cw/2, duration: d, ease: 'power2.out' }, 0.49);
+
+    // State 2→3: CHAIN — 2 gets knocked left, 3 takes anchor
+    tl.to('#s1', { left: states[3].s1-cw/2, duration: 0.04, ease: 'power3.out' }, 0.54);
+    tl.to('#s2', { left: states[3].s2-cw/2, duration: 0.04, ease: 'power3.out' }, 0.54);
+    tl.to('#s3', { left: states[3].s3-cw/2, duration: d, ease: 'power2.out' }, 0.54);
+
+    // Update lines every frame
+    tl.eventCallback('onUpdate', () => {
+      const s1x = gsap.getProperty('#s1','left') + cw/2;
+      const s2x = gsap.getProperty('#s2','left') + cw/2;
+      const s3x = gsap.getProperty('#s3','left') + cw/2;
+      updateLines({ s1: s1x, s2: s2x, s3: s3x });
+    });
+  }
+}
+
+/* ==============================================================
+   D: DEVICE SECTION — entrance + pinned mirror rotation
+   1. Section scrolls into view (fade from right)
+   2. When fully scrolled through, section PINS
+   3. Mockups rotate mirror: laptop left, phone right
+   4. Pin releases → scroll continues to pricing
+   ============================================================== */
+{
+  var devSec = document.getElementById('deviceSection');
+  var devLaptop = devSec.querySelector('.device-laptop');
+  var devPhone = devSec.querySelector('.device-phone');
+
+  // Entrance: subtle fade from right
+  gsap.from(devSec, {
+    x: 60, opacity: 0,
+    scrollTrigger: {
+      trigger: devSec,
+      start: 'top 80%',
+      end: 'top 50%',
+      scrub: true,
+    }
+  });
+
+  // After fully scrolling through section: pin and rotate
+  var rotateTl = gsap.timeline({
+    scrollTrigger: {
+      trigger: devSec,
+      start: 'bottom bottom',
+      end: '+=600',
+      pin: true,
+      scrub: 0.5,
+    }
+  });
+  rotateTl.to(devLaptop, { rotateY: -12, ease: 'power2.inOut', duration: 1 }, 0);
+  rotateTl.to(devPhone, { rotateY: 12, ease: 'power2.inOut', duration: 1 }, 0);
+
+  // CTA: center on device section, back to left when leaving
+  ScrollTrigger.create({
+    trigger: devSec,
+    start: 'top 60%',
+    onEnter: function() {
+      gsap.to(stickyBar, { left: '50%', xPercent: -50, duration: 0.6, ease: 'power2.out' });
+    },
+    onLeaveBack: function() {
+      gsap.to(stickyBar, { left: '60px', xPercent: 0, duration: 0.6, ease: 'power2.out' });
+    },
+  });
+}
+
+/* ==============================================================
+   E: POST-PIN THEME
+   ============================================================== */
+ScrollTrigger.create({
+  trigger: '.pricing-section',
+  start: 'top 80%',
+  onEnter: () => { setLogoTheme(false); setStickyTheme(true); },
+});
+
+/* ==============================================================
+   F: B2B MODAL
+   ============================================================== */
+(function() {
+  const modal = document.getElementById('b2bModal');
+  const form = document.getElementById('b2bForm');
+  const success = document.getElementById('modalSuccess');
+  const backdrop = document.getElementById('modalBackdrop');
+  const closeBtn = document.getElementById('modalClose');
+  const openBtn = document.getElementById('openModal');
+  if (!modal) return;
+
+  let prevFocus = null;
+
+  function openModal() {
+    prevFocus = document.activeElement;
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    setTimeout(() => { const inp = modal.querySelector('.modal__input'); if (inp) inp.focus(); }, 100);
+    modal.addEventListener('keydown', trapFocus);
+  }
+  function closeModal() {
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    modal.removeEventListener('keydown', trapFocus);
+    if (prevFocus) prevFocus.focus();
+    setTimeout(() => { if (form) { form.hidden = false; form.reset(); } if (success) success.hidden = true; }, 300);
+  }
+  function trapFocus(e) {
+    if (e.key !== 'Tab') return;
+    const els = modal.querySelectorAll('input, textarea, button, [tabindex]:not([tabindex="-1"])');
+    const first = els[0], last = els[els.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+
+  openBtn?.addEventListener('click', openModal);
+  closeBtn?.addEventListener('click', closeModal);
+  backdrop?.addEventListener('click', closeModal);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+  });
+
+  const errorName = document.getElementById('errorName');
+  const errorEmail = document.getElementById('errorEmail');
+
+  form?.querySelectorAll('.modal__input').forEach(input => {
+    input.addEventListener('input', () => {
+      input.classList.remove('is-invalid');
+      const err = input.nextElementSibling;
+      if (err?.classList.contains('modal__error')) err.classList.remove('is-visible');
+    });
+  });
+
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    [errorName, errorEmail].forEach(el => el?.classList.remove('is-visible'));
+    form.querySelectorAll('.modal__input').forEach(el => el.classList.remove('is-invalid'));
+
+    const name = form.querySelector('input[name="name"]');
+    const email = form.querySelector('input[name="email"]');
+    let valid = true;
+
+    if (!name.value.trim()) { name.classList.add('is-invalid'); errorName?.classList.add('is-visible'); name.focus(); valid = false; }
+    if (!email.value.includes('@') || !email.value.includes('.')) { email.classList.add('is-invalid'); errorEmail?.classList.add('is-visible'); if (valid) email.focus(); valid = false; }
+    if (!valid) return;
+
+    const btn = form.querySelector('.modal__submit');
+    if (btn) { btn.disabled = true; btn.textContent = 'ОТПРАВКА...'; }
+
+    fetch('https://script.google.com/macros/s/AKfycbzNsN8jqqTiCX7Ghn8MAQUsNQTKmqO83Uxn6JXh62N-SvcrISrR8KVo0QrqjsZTRv4q0Q/exec', {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        name: name.value.trim(),
+        email: email.value.trim(),
+        company: form.querySelector('input[name="company"]')?.value.trim() || '',
+        message: form.querySelector('textarea[name="message"]')?.value.trim() || ''
+      })
+    }).finally(() => {
+      form.hidden = true; success.hidden = false;
+      if (btn) { btn.disabled = false; btn.textContent = 'ОТПРАВИТЬ'; }
+    });
+  });
+})();
+</script>
+</body>
+</html>
