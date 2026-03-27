@@ -1000,12 +1000,18 @@ function setLogoTheme(dark) {
   logoEl.classList.toggle('logo--dark', dark);
 }
 
-// Show sticky bar after hero
+// Show sticky bar after hero, hide at final CTA
 ScrollTrigger.create({
   trigger: '#mainSection',
   start: 'top 80%',
   onEnter: () => stickyBar.classList.add('is-visible'),
   onLeaveBack: () => stickyBar.classList.remove('is-visible'),
+});
+ScrollTrigger.create({
+  trigger: '.final-cta',
+  start: 'top 80%',
+  onEnter: () => stickyBar.classList.remove('is-visible'),
+  onLeaveBack: () => stickyBar.classList.add('is-visible'),
 });
 
 /* ==============================================================
