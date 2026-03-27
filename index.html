@@ -433,12 +433,15 @@ img { display: block; max-width: 100%; }
 }
 .device-laptop {
   flex: 0 0 65%; border-radius: 16px; overflow: hidden;
+  display: grid;
 }
-.device-laptop img { width: 100%; display: block; }
+.device-laptop img { grid-area: 1 / 1; width: 100%; display: block; }
 .device-phone {
   flex: 0 0 20%; border-radius: 24px; overflow: hidden;
+  display: grid;
 }
-.device-phone img { width: 100%; display: block; }
+.device-phone img { grid-area: 1 / 1; width: 100%; display: block; }
+.dev-img--to { opacity: 0; }
 
 /* ==========================================================================
    PRICING (adapted from v1.3)
@@ -804,8 +807,14 @@ img { display: block; max-width: 100%; }
   <h2>на любом<br>устройстве</h2>
   <p class="sub">КОГДА ВАЖНЫ СКОРОСТЬ. ФОКУС И ПРОФЕССИОНАЛИЗМ</p>
   <div class="device-mockups">
-    <div class="device-laptop"><img src="assets/device-desktop-long.png" alt="Kommza на десктопе"></div>
-    <div class="device-phone"><img src="assets/device-phone-long.png" alt="Kommza на телефоне"></div>
+    <div class="device-laptop">
+      <img src="assets/mockup-desktop-out.png" class="dev-img dev-img--from" alt="Kommza на десктопе">
+      <img src="assets/mockup-desktop-in.png" class="dev-img dev-img--to" alt="Kommza на десктопе">
+    </div>
+    <div class="device-phone">
+      <img src="assets/mockup-phone-out.png" class="dev-img dev-img--from" alt="Kommza на телефоне">
+      <img src="assets/mockup-phone-in.png" class="dev-img dev-img--to" alt="Kommza на телефоне">
+    </div>
   </div>
 </section>
 
@@ -1215,8 +1224,10 @@ ScrollTrigger.create({
     }
   });
 
-  // After fully scrolling through section: pin and rotate
-  var rotateTl = gsap.timeline({
+  // After fully scrolling through section: pin and crossfade mockups
+  var fromImgs = devSec.querySelectorAll('.dev-img--from');
+  var toImgs = devSec.querySelectorAll('.dev-img--to');
+  var crossfadeTl = gsap.timeline({
     scrollTrigger: {
       trigger: devSec,
       start: 'bottom bottom',
@@ -1225,8 +1236,8 @@ ScrollTrigger.create({
       scrub: 0.5,
     }
   });
-  rotateTl.to(devLaptop, { rotateY: -12, ease: 'power2.inOut', duration: 1 }, 0);
-  rotateTl.to(devPhone, { rotateY: 12, ease: 'power2.inOut', duration: 1 }, 0);
+  crossfadeTl.to(fromImgs, { opacity: 0, ease: 'power2.inOut', duration: 1 }, 0);
+  crossfadeTl.to(toImgs, { opacity: 1, ease: 'power2.inOut', duration: 1 }, 0);
 
   // CTA: center on device section, back to left when leaving
   ScrollTrigger.create({
