@@ -1231,13 +1231,20 @@ ScrollTrigger.create({
     scrollTrigger: {
       trigger: devSec,
       start: 'bottom bottom',
-      end: '+=600',
+      end: '+=1200',
       pin: true,
-      scrub: 0.5,
+      scrub: 1.2,
     }
   });
-  crossfadeTl.to(fromImgs, { opacity: 0, ease: 'power2.inOut', duration: 1 }, 0);
-  crossfadeTl.to(toImgs, { opacity: 1, ease: 'power2.inOut', duration: 1 }, 0);
+  // Phase 1: scale up slightly + blur as transition mask
+  crossfadeTl.to([devLaptop, devPhone], { scale: 1.03, duration: 0.4, ease: 'power1.in' }, 0);
+  crossfadeTl.to([devLaptop, devPhone], { filter: 'blur(6px)', duration: 0.3, ease: 'power1.in' }, 0.1);
+  // Phase 2: crossfade images while blurred
+  crossfadeTl.to(fromImgs, { opacity: 0, duration: 0.4, ease: 'none' }, 0.25);
+  crossfadeTl.to(toImgs, { opacity: 1, duration: 0.4, ease: 'none' }, 0.25);
+  // Phase 3: unblur + settle back
+  crossfadeTl.to([devLaptop, devPhone], { filter: 'blur(0px)', duration: 0.3, ease: 'power1.out' }, 0.55);
+  crossfadeTl.to([devLaptop, devPhone], { scale: 1, duration: 0.4, ease: 'power2.out' }, 0.6);
 
   // CTA: center on device section, back to left when leaving
   ScrollTrigger.create({
